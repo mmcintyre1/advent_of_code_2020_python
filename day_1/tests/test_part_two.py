@@ -1,4 +1,4 @@
-from day_one.part_two import product_of_2020
+from day_1.part_two import product_of_2020
 
 
 def test_part_two():

@@ -1,6 +1,6 @@
 from textwrap import dedent
 
-from day_two.part_one import parse_password
+from day_2.part_one import parse_password
 
 
 def test_password_valid_count():
