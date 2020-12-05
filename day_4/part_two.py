@@ -46,92 +46,49 @@ class Passport:
 
     def __init__(self, passport_id, birth_year, issue_year, expiration_year, hair_color, height, eye_color,
                  country_id=None):
-        self._passport_id = passport_id
-        self._birth_year = birth_year
-        self._issue_year = issue_year
-        self._expiration_year = expiration_year
-        self._hair_color = hair_color
-        self._height = height
-        self._eye_color = eye_color
-        self._country_id = country_id
+        self.passport_id = self.validate_pattern(passport_id, self.pv.passport_id_pattern)
+        self.birth_year = self.validate_year(
+            birth_year, start=self.pv.birth_year.start, end=self.pv.birth_year.end
+        )
+        self.issue_year = self.validate_year(
+            issue_year, start=self.pv.issue_year.start, end=self.pv.issue_year.end
+        )
+        self.expiration_year = self.validate_year(
+            expiration_year, start=self.pv.expiration_year.start, end=self.pv.expiration_year.end
+        )
+        self.hair_color = self.validate_pattern(hair_color, self.pv.hair_color_pattern)
+        self.height = self.validate_height(height)
+        self.eye_color = self.validate_membership(eye_color, self.pv.eye_colors)
+        self.country_id = country_id
 
-    @property
-    def passport_id(self):
-        return self._passport_id
+    @staticmethod
+    def validate_pattern(text, pattern):
+        if not re.match(pattern, text):
+            raise ValueError(f"{text} does not match {pattern}")
 
-    @passport_id.setter
-    def passport_id(self, passport_id):
-        if re.match('^[0-9]{9}$', passport_id) is None:
-            raise ValueError(f'Password must match regex: ^[0-9]{9}$')
-        self._passport_id = passport_id
+    @staticmethod
+    def validate_year(year, start=1900, end=2000):
+        if not start <= int(year) <= end:
+            raise ValueError(f"{year} is not between {start} and {end}")
 
-    @property
-    def birth_year(self):
-        return self._birth_year
-
-    @birth_year.setter
-    def birth_year(self, birth_year):
-        if not is_valid_year(birth_year, self.pv.birth_year.start, self.pv.birth_year.end):
-            raise ValueError(f'Birth Year must fall between {self.pv.birth_year.start} and {self.pv.birth_year.end}')
-        self._birth_year = birth_year
-
-    @property
-    def issue_year(self):
-        return self._issue_year
-
-    @issue_year.setter
-    def issue_year(self, issue_year):
-        if not is_valid_year(issue_year, self.pv.issue_year.start, self.pv.issue_year.end):
-            raise ValueError(f'Issue Year must fall between {self.pv.issue_year.start} and {self.pv.issue_year.end}')
-        self._issue_year = issue_year
-
-    @property
-    def expiration_year(self):
-        return self._expiration_year
-
-    @expiration_year.setter
-    def expiration_year(self, expiration_year):
-        if not is_valid_year(expiration_year, self.pv.expiration_year.start, self.pv.expiration_year.end):
-            raise ValueError(
-                f'Expiration Year must fall between {self.pv.expiration_year.start} and {self.pv.expiration_year.end}'
-            )
-        self._expiration_year = expiration_year
-
-    @property
-    def hair_color(self):
-        return self._hair_color
-
-    @hair_color.setter
-    def hair_color(self, hair_color):
-        if re.match('^#[a-fA-F0-9]{6}$', hair_color) is None:
-            raise ValueError(f'Hair color must match regex ^#[a-fA-F0-9]{6}$')
-        self._hair_color = hair_color
-
-    @property
-    def height(self):
-        return self._height
-
-    @height.setter
-    def height(self, height):
+    @staticmethod
+    def validate_height(height):
         measure_constraints = {
             'cm': (150, 193),
             'in': (59, 76)
         }
         m = height[-2:]
         h = int(height[:-2])
-        if not measure_constraints[m][0] <= h <= measure_constraints[m][1]:
-            raise ValueError(f'Height in {m} must fall between {measure_constraints[m]}')
-        self._height = height
+        try:
+            if not measure_constraints[m][0] <= h <= measure_constraints[m][1]:
+                raise ValueError(f'Height in {m} must fall between {measure_constraints[m]}')
+        except KeyError:
+            raise ValueError('No unit of measurement supplied.')
 
-    @property
-    def eye_color(self):
-        return self._eye_color
-
-    @eye_color.setter
-    def eye_color(self, eye_color):
-        if eye_color not in self.pv.eye_colors:
-            raise ValueError(f'Eye color must be one of {self.pv.eye_colors}')
-        self._eye_color = eye_color
+    @staticmethod
+    def validate_membership(item, group):
+        if item not in group:
+            raise ValueError(f"{item} not in {group}")
 
 
 def passport_parser(passport_data: str):
@@ -148,10 +105,10 @@ def passport_parser(passport_data: str):
             key, value = key_value_pair.split(":")
             passport_fields[getattr(PassportFields, key)] = value
         try:
+            print(passport_fields)
             passports.append(Passport(**passport_fields))
         except (TypeError, ValueError) as e:
-            print(e)
-    print(passports)
+            pass
 
     return passports
 
