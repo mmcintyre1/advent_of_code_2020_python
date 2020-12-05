@@ -32,14 +32,14 @@ class Passport:
             eye_color: str,
             country_id: Optional[int] = None
     ):
-        self.passport_id = passport_id
-        self.birth_year = birth_year
-        self.issue_year = issue_year
-        self.expiration_year = expiration_year
-        self.hair_color = hair_color
-        self.height = height
-        self.eye_color = eye_color
-        self.country_id = country_id
+        self._passport_id = passport_id
+        self._birth_year = birth_year
+        self._issue_year = issue_year
+        self._expiration_year = expiration_year
+        self._hair_color = hair_color
+        self._height = height
+        self._eye_color = eye_color
+        self._country_id = country_id
 
 
 def passport_parser(passport_data: str):
