@@ -15,13 +15,12 @@ def main():
     faded blue bags contain no other bags.
     dotted black bags contain no other bags.
     """)
-    all_bags = rule_parser(rules)
-    print(all_bags)
-    # containing_colors = []
-    # for bag_color, bag in all_bags.items():
-    #     for contents in bag.contents:
-    #         if contents.color == 'shiny gold':
-    #             containing_colors.append(bag_color)
+    all_bags = bag_builder(rules)
+    containing_colors = []
+    for bag_color, bag in all_bags.items():
+        for contents in bag.contents:
+            if contents.color == 'shiny gold':
+                containing_colors.append(bag_color)
 
 
 @dataclass
@@ -31,12 +30,12 @@ class Bag:
     count: int = 1
 
 
-def rule_parser(rules: str) -> Dict[str, Bag]:
+def bag_builder(rules: str) -> Dict[str, Bag]:
     bags = {}
-    for rule in rules.split("\n"):
-        if rule.strip():
-            bag_color = rule.split("bags")[0].strip()
-            unparsed_contents = rule.split("contain")[-1]
+    for bag in rules.split("\n"):
+        if bag.strip():
+            bag_color = bag.split("bags")[0].strip()
+            unparsed_contents = bag.split("contain")[-1]
             bags[bag_color] = Bag(
                 color=bag_color,
                 count=1,
@@ -61,8 +60,8 @@ def parse_contents(unparsed_contents) -> List[Bag]:
     return bag_contents
 
 
-def which_bagger(bags):
-    pass
+def bag_parser(bags):
+    results = []
 
 
 if __name__ == '__main__':
