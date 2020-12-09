@@ -1,26 +1,13 @@
+import pathlib
 from dataclasses import dataclass
-from textwrap import dedent
-from typing import Dict, List
+from typing import List
 
 
 def main():
-    rules = dedent("""
-    light red bags contain 1 bright white bag, 2 muted yellow bags.
-    dark orange bags contain 3 bright white bags, 4 muted yellow bags.
-    bright white bags contain 1 shiny gold bag.
-    muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.
-    shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.
-    dark olive bags contain 3 faded blue bags, 4 dotted black bags.
-    vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.
-    faded blue bags contain no other bags.
-    dotted black bags contain no other bags.
-    """)
+    rules = pathlib.Path('puzzle_input.txt').read_text()
     all_bags = bag_builder(rules)
-    containing_colors = []
-    for bag_color, bag in all_bags.items():
-        for contents in bag.contents:
-            if contents.color == 'shiny gold':
-                containing_colors.append(bag_color)
+    matching_bags = bag_handler(all_bags, target_bag='shiny gold')
+    print(len(matching_bags))
 
 
 @dataclass
@@ -30,23 +17,23 @@ class Bag:
     count: int = 1
 
 
-def bag_builder(rules: str) -> Dict[str, Bag]:
-    bags = {}
+def bag_builder(rules: str):
+    bags = []
     for bag in rules.split("\n"):
         if bag.strip():
-            bag_color = bag.split("bags")[0].strip()
-            unparsed_contents = bag.split("contain")[-1]
-            bags[bag_color] = Bag(
-                color=bag_color,
+            bag_color, bag_contents = bag.split("bags contain")
+            bags.append(Bag(
+                color=bag_color.strip(),
                 count=1,
-                contents=parse_contents(unparsed_contents)
-            )
+                contents=parse_contents(bag_contents)
+            ))
     return bags
 
 
 def parse_contents(unparsed_contents) -> List[Bag]:
     bag_contents = []
     for bag in unparsed_contents.split(", "):
+
         if "no other" in bag:
             break
 
@@ -60,8 +47,21 @@ def parse_contents(unparsed_contents) -> List[Bag]:
     return bag_contents
 
 
-def bag_parser(bags):
-    results = []
+def bag_handler(bags, target_bag):
+    containing_bags = []
+
+    def find_parent_bag(target):
+        for bag in bags:
+            if not bag.contents:
+                pass
+            for contents in bag.contents:
+                if contents.color == target:
+                    containing_bags.append(bag.color)
+                    find_parent_bag(bag.color)
+
+    find_parent_bag(target_bag)
+
+    return set(containing_bags)
 
 
 if __name__ == '__main__':
