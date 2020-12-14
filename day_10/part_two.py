@@ -2,11 +2,12 @@ import pathlib
 
 
 def main():
-    data = [
-        int(s)
-        for s in pathlib.Path('puzzle_input.txt').read_text().split('\n')
-        if s.strip()
-    ]
+    # data = [
+    #     int(s)
+    #     for s in pathlib.Path('puzzle_input.txt').read_text().split('\n')
+    #     if s.strip()
+    # ]
+    data = [1, 2, 3, 4]
     print(calculate_all_paths(data))
 
 
