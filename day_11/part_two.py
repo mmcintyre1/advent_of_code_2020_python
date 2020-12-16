@@ -13,23 +13,10 @@ seat_lookup = {
 
 
 def main():
-    # seat_data = pathlib.Path('puzzle_input.txt').read_text()
-    seat_data = dedent("""
-    L.LL.LL.LL
-    LLLLLLL.LL
-    L.L.L..L..
-    LLLL.LL.LL
-    L.LL.LL.LL
-    L.LLLLL.LL
-    ..L.L.....
-    LLLLLLLLLL
-    L.LLLLLL.L
-    L.LLLLL.LL
-    """).strip()
+    seat_data = pathlib.Path('puzzle_input.txt').read_text()
     plane = plane_parser(seat_data)
     while not plane.boarded:
-        plane.board_plane(max_adjacent=5)
-        print(plane)
+        plane.board_plane()
     print(plane.get_occupied_seats())
 
 
@@ -38,7 +25,7 @@ class Seat:
     is_empty: bool
 
 
-class GridMovement:
+class Directions:
     def __init__(self):
         self.x = 0
         self.y = 0
@@ -81,7 +68,7 @@ class GridMovement:
 
 class Plane:
     boarded = False
-    gm = GridMovement()
+    directions = Directions()
 
     def __init__(self):
         self.seats: Union[Dict[Tuple[int, int], Seat], floor] = dict()
@@ -89,14 +76,15 @@ class Plane:
     def is_adjacent_occupied(self, x, y, max_adjacent):
         current_adjacent = 0
         for move in (
-            self.gm.right, self.gm.left, self.gm.up, self.gm.down, self.gm.down_left, self.gm.down_right,
-            self.gm.up_right,self.gm.up_left
+                self.directions.right, self.directions.left, self.directions.up, self.directions.down,
+                self.directions.down_left, self.directions.down_right,
+                self.directions.up_right, self.directions.up_left
         ):
-            self.gm.x, self.gm.y = x, y
+            self.directions.x, self.directions.y = x, y
             move()
             while True:
                 try:
-                    adjacent_seat = self.seats[self.gm.x, self.gm.y]
+                    adjacent_seat = self.seats[self.directions.x, self.directions.y]
                 except KeyError:
                     break
                 if adjacent_seat is floor:
@@ -108,15 +96,15 @@ class Plane:
                     break
         return current_adjacent >= max_adjacent
 
-    def board_plane(self, max_adjacent):
+    def board_plane(self):
         boarded_seats = {}
         for coords, seat in self.seats.items():
             if seat is floor:
                 boarded_seats[coords] = floor
             else:
-                if seat.is_empty and not self.is_adjacent_occupied(x=coords[0], y=coords[1], max_adjacent=max_adjacent):
+                if seat.is_empty and not self.is_adjacent_occupied(x=coords[0], y=coords[1], max_adjacent=1):
                     boarded_seats[coords] = Seat(is_empty=False)
-                elif not seat.is_empty and self.is_adjacent_occupied(x=coords[0], y=coords[1], max_adjacent=max_adjacent):
+                elif not seat.is_empty and self.is_adjacent_occupied(x=coords[0], y=coords[1], max_adjacent=5):
                     boarded_seats[coords] = Seat(is_empty=True)
                 else:
                     boarded_seats[coords] = seat
@@ -144,8 +132,8 @@ class Plane:
         grid_rows, grid_cols = self.get_grid_size()
         grid = ""
 
-        for y in range(grid_rows + 1):
-            for x in range(grid_cols + 1):
+        for y in range(grid_rows):
+            for x in range(grid_cols):
                 seat = self.seats[x, y]
                 if seat is floor:
                     grid += floor_char
