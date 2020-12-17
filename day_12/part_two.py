@@ -10,6 +10,8 @@ def main():
     ship = Ship()
     for direction, spaces in inst:
         ship.move(direction, spaces)
+        print(ship.coordinates)
+        print(ship.waypoint)
 
     print(ship.get_manhattan_distance())
 
@@ -37,13 +39,16 @@ class Coordinates:
         self.x = x
         self.y = y
 
+    def __str__(self):
+        return f"({self.x}, {self.y})"
+
 
 class Ship:
-    degree_lookup = {
-        0: 'E',
-        90: 'S',
-        180: 'W',
-        270: 'N'
+    rotations = {
+        90: 1,
+        180: 2,
+        270: 3,
+        0: 4
     }
 
     directions = {
@@ -56,41 +61,33 @@ class Ship:
     def __init__(self):
         self.waypoint = Coordinates(10, 1)
         self.coordinates = Coordinates()
-        self.facing = 0
 
     def __turn(self, direction: str, degrees: int):
         if direction == 'L':
-            op = operator.sub
-        elif direction == 'R':
-            op = operator.add
+            degrees = 360 - degrees
+        degrees = degrees % 360
+        for _ in range(self.rotations[degrees]):
+            self.waypoint.x, self.waypoint.y = self.waypoint.y, -self.waypoint.x
+
+    def __move_waypoint(self, direction: str, spaces: int):
+        for _ in range(spaces):
+            self.waypoint.x += self.directions[direction].value[0]
+            self.waypoint.y += self.directions[direction].value[1]
+
+    def __move_ship(self, spaces: int):
+        for _ in range(spaces):
+            self.coordinates.x += self.waypoint.x
+            self.coordinates.y += self.waypoint.y
+
+    def move(self, direction: str, spaces: int):
+        if direction in ('L', 'R'):
+            self.__turn(direction, spaces)
+        elif direction == 'F':
+            self.__move_ship(spaces)
+        elif direction in ('N', 'E', 'S', 'W'):
+            self.__move_waypoint(direction, spaces)
         else:
-            raise ValueError(f'{direction} not valid.')
-        self.facing = op(self.facing, degrees) % 360
-
-    def __move_waypoint(self):
-        pass
-
-    def __move_ship(self):
-        pass
-
-    def move(self, direction, spaces):
-        pass
-
-
-    # def move(self, direction: str, spaces: int):
-    #     if direction in ('L', 'R'):
-    #         self.turn(direction, spaces)
-    #         return
-    #     if direction == 'F':
-    #         direction = self.degree_lookup[self.facing]
-    #     elif direction == 'B':
-    #         direction = self.degree_lookup[self.facing] % 180
-    #
-    #     direction = self.directions[direction]
-    #
-    #     for _ in range(spaces):
-    #         self.coordinates.x += direction.value[0]
-    #         self.coordinates.y += direction.value[1]
+            raise ValueError(f"{direction} not an allowed field.")
 
     def get_manhattan_distance(self):
         return abs(self.coordinates.x) + abs(self.coordinates.y)
