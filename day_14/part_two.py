@@ -13,10 +13,10 @@ def run(instructions):
     memory = {}
     for instruction_group in instructions:
         mask = instruction_group['mask']
-        for memory_address, _ in instruction_group['subgroups']:
+        for memory_address, update_value in instruction_group['subgroups']:
             binary_value = f"{memory_address:b}"
             filtered_value = bitmask_filter(mask, binary_value)
-            all_memory_addresses = resolve_floating_registers(filtered_value)
+            all_memory_addresses = resolve_floating_registers(filtered_value, f"{update_value:b}".zfill(36))
             memory.update(all_memory_addresses)
     return memory
 
@@ -42,14 +42,14 @@ def bitmask_filter(mask: str, binary_value: str):
     return f"{result:0>36}"
 
 
-def resolve_floating_registers(memory_register: str) -> Dict[int, str]:
+def resolve_floating_registers(memory_register: str, update_value: str) -> Dict[int, str]:
     memory_update = {}
     floating_indices = [idx for idx, _ in enumerate(memory_register) if _ == 'X']
     for float_group in product('01', repeat=memory_register.count('X')):
         tmp_memory = list(memory_register)
         for float_index, replacement in zip(floating_indices, float_group):
             tmp_memory[float_index] = replacement
-        memory_update[int("".join(tmp_memory), 2)] = "".join(tmp_memory)
+        memory_update[int("".join(tmp_memory), 2)] = update_value
 
     return memory_update
 
