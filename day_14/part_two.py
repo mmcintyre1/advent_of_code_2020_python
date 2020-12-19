@@ -18,7 +18,6 @@ def run(instructions):
             filtered_value = bitmask_filter(mask, binary_value)
             all_memory_addresses = resolve_floating_registers(filtered_value)
             memory.update(all_memory_addresses)
-
     return memory
 
 
