@@ -14,9 +14,10 @@ def run(instructions):
     for instruction_group in instructions:
         mask = instruction_group['mask']
         for memory_address, update_value in instruction_group['subgroups']:
-            binary_value = f"{memory_address:b}"
-            filtered_value = bitmask_filter(mask, binary_value)
-            all_memory_addresses = resolve_floating_registers(filtered_value, f"{update_value:b}".zfill(36))
+            all_memory_addresses = resolve_floating_registers(
+                bitmask_filter(mask, f"{memory_address:b}"),
+                f"{update_value:b}".zfill(36)
+            )
             memory.update(all_memory_addresses)
     return memory
 
