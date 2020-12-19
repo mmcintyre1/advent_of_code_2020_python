@@ -1,6 +1,6 @@
 import pathlib
-from collections import defaultdict
-from itertools import combinations, permutations, product
+from itertools import product
+from typing import Dict
 
 
 def main():
@@ -15,7 +15,9 @@ def run(instructions):
         mask = instruction_group['mask']
         for memory_address, _ in instruction_group['subgroups']:
             binary_value = f"{memory_address:b}"
-            memory[memory_address] = bitmask_filter(mask, binary_value)
+            filtered_value = bitmask_filter(mask, binary_value)
+            all_memory_addresses = resolve_floating_registers(filtered_value)
+            memory.update(all_memory_addresses)
 
     return memory
 
@@ -23,25 +25,34 @@ def run(instructions):
 def count_memory(memory):
     count = 0
     for memory_register in memory.values():
-        local_registers = []
-        if 'X' in memory_register:
-            print(memory_register)
-            # all_replacements = product([0, 1], memory_register.count('X'))
-            # print(list(all_replacements))
-        # count += int(memory_register, 2)
+        count += int(memory_register, 2)
 
     return count
 
 
-def bitmask_filter(mask, binary_value):
+def bitmask_filter(mask: str, binary_value: str):
     result = ""
     for idx, val in enumerate(f"{binary_value:0>36}"):
         if mask[idx] == 'X':
             result += 'X'
-        else:
+        elif mask[idx] == '1':
             result += mask[idx]
+        else:
+            result += val
 
     return f"{result:0>36}"
+
+
+def resolve_floating_registers(memory_register: str) -> Dict[int, str]:
+    memory_update = {}
+    floating_indices = [idx for idx, _ in enumerate(memory_register) if _ == 'X']
+    for float_group in product('01', repeat=memory_register.count('X')):
+        tmp_memory = list(memory_register)
+        for float_index, replacement in zip(floating_indices, float_group):
+            tmp_memory[float_index] = replacement
+        memory_update[int("".join(tmp_memory), 2)] = "".join(tmp_memory)
+
+    return memory_update
 
 
 def instruction_parser(raw_instructions):
